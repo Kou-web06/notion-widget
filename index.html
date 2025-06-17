@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今日の名言</title>
+    <style>
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(90deg, #a1c4fd 0%, #c2e9fb 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .quote-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .date {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .quote-text {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 20px;
+            font-style: italic;
+            position: relative;
+            transition: opacity 0.3s ease;
+        }
+        
+        .quote-text::before,
+        .quote-text::after {
+            content: '"';
+            font-size: 24px;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .author {
+            font-size: 16px;
+            color: #555;
+            font-weight: 600;
+            transition: opacity 0.3s ease;
+        }
+        
+        .refresh-btn {
+            margin-top: 20px;
+            padding: 8px 16px;
+            background-color: #000;
+            color: white;
+            border: 1px solid transparent; 
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background .3s;
+        }
+        
+        .refresh-btn:hover {
+            background: #fff;
+            color: #000;
+            border: 1px solid #000;
+        }
+        
+        .refresh-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div class="quote-container">
+        <div class="date" id="current-date"></div>
+        <div class="quote-text" id="quote-text"></div>
+        <div class="author" id="quote-author"></div>
+        <button class="refresh-btn" id="refresh-button">New Quote</button>
+    </div>
+
+    <script>
+        const quotes = [
+            {
+                text: "昨日から学び、今日を生き、明日に希望を持て。",
+                author: "アルベルト・アインシュタイン"
+            },
+            {
+                text: "成功は最終的なものではなく、失敗は致命的なものではない。大切なのは続ける勇気である。",
+                author: "ウィンストン・チャーチル"
+            },
+            {
+                text: "夢を見る勇気があるなら、それを実現する力もある。",
+                author: "ウォルト・ディズニー"
+            },
+            {
+                text: "人生で最も重要なことは、自分が何を知らないかを知ることである。",
+                author: "ソクラテス"
+            },
+            {
+                text: "変化することを恐れてはいけない。むしろ変化しないことを恐れるべきだ。",
+                author: "ココ・シャネル"
+            },
+            {
+                text: "できると思うか、できないと思うか、どちらも正しい。",
+                author: "ヘンリー・フォード"
+            },
+            {
+                text: "人は城、人は石垣、人は堀、情けは味方、仇は敵なり。",
+                author: "武田信玄"
+            },
+            {
+                text: "今日という日は、残りの人生の最初の日である。",
+                author: "アビー・ホフマン"
+            },
+            {
+                text: "困難の中に機会がある。",
+                author: "アルベルト・アインシュタイン"
+            },
+            {
+                text: "行動を起こさなければ、何も始まらない。",
+                author: "マハトマ・ガンディー"
+            },
+            {
+                text: "失敗は成功の母である。",
+                author: "トーマス・エジソン"
+            },
+            {
+                text: "時は金なり。",
+                author: "ベンジャミン・フランクリン"
+            },
+            {
+                text: "学ぶことをやめたら、教えることをやめなければならない。",
+                author: "ロジェ・ゴドメン"
+            },
+            {
+                text: "人生は一度きり、だからこそ美しい。",
+                author: "マリリン・モンロー"
+            },
+            {
+                text: "明日死ぬかのように生き、永遠に生きるかのように学べ。",
+                author: "マハトマ・ガンディー"
+            },
+            {
+                text: "どんなに暗い夜でも、朝は必ずやってくる。",
+                author: "ヴィクトル・ユーゴー"
+            },
+            {
+                text: "自分に勝つことが、最も偉大な勝利である。",
+                author: "プラトン"
+            },
+            {
+                text: "チャンスは準備された心に宿る。",
+                author: "ルイ・パスツール"
+            },
+            {
+                text: "最も大きな冒険は、自分らしく生きることだ。",
+                author: "オプラ・ウィンフリー"
+            },
+            {
+                text: "成功への道は、常に建設中である。",
+                author: "リリー・トムリン"
+            }
+        ];
+
+        let currentQuoteIndex = 0;
+        let usedQuotes = [];
+
+        function getDayOfYear() {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), 0, 0);
+            const diff = now - start;
+            return Math.floor(diff / (1000 * 60 * 60 * 24));
+        }
+
+        function getRandomQuote() {
+            // 全ての名言を使い切ったらリセット
+            if (usedQuotes.length >= quotes.length) {
+                usedQuotes = [];
+            }
+            
+            let availableQuotes = quotes.filter((_, index) => !usedQuotes.includes(index));
+            let randomIndex = Math.floor(Math.random() * availableQuotes.length);
+            let selectedQuote = availableQuotes[randomIndex];
+            
+            // 使用済みリストに追加
+            let originalIndex = quotes.indexOf(selectedQuote);
+            usedQuotes.push(originalIndex);
+            
+            return selectedQuote;
+        }
+
+        function loadDailyQuote() {
+            const dayOfYear = getDayOfYear();
+            const quoteIndex = dayOfYear % quotes.length;
+            const todayQuote = quotes[quoteIndex];
+            currentQuoteIndex = quoteIndex;
+            
+            document.getElementById('quote-text').textContent = todayQuote.text;
+            document.getElementById('quote-author').textContent = `― ${todayQuote.author}`;
+        }
+
+        function loadRandomQuote() {
+            const randomQuote = getRandomQuote();
+            
+            // フェードアウト効果
+            const quoteText = document.getElementById('quote-text');
+            const quoteAuthor = document.getElementById('quote-author');
+            
+            quoteText.style.opacity = '0';
+            quoteAuthor.style.opacity = '0';
+            
+            setTimeout(() => {
+                quoteText.textContent = randomQuote.text;
+                quoteAuthor.textContent = `― ${randomQuote.author}`;
+                
+                // フェードイン効果
+                quoteText.style.opacity = '1';
+                quoteAuthor.style.opacity = '1';
+            }, 150);
+        }
+
+        function updateDate() {
+            const now = new Date();
+            const options = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long'
+            };
+            document.getElementById('current-date').textContent = 
+                now.toLocaleDateString('ja-JP', options);
+        }
+
+        // ページ読み込み時に実行
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDate();
+            loadDailyQuote();
+            
+            // ボタンのイベントリスナーを追加
+            document.getElementById('refresh-button').addEventListener('click', function() {
+                loadRandomQuote();
+            });
+        });
+    </script>
+</body>
+</html>
